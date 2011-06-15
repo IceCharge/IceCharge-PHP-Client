@@ -181,7 +181,7 @@
 	/* OOB holds all possible REST responses for an OOB related action.
 	 *
 	 * Token: contains a generated token based on either a SID or a TID.
-	 * Status: contains whether sending SMS was successful or not.
+	 * Status: contains whether the secret sent matches the one we generated. [OOBVerifyStatus]
 	 */
 
 	class OOB {
