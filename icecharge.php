@@ -129,7 +129,7 @@
 					throw (new IceChargeException("syntax error in IceCharge's JSON response"));
 
 				if ($this->IsError)
-					$this->ErrorMessage = $this->Response->errmsg;
+					$this->ErrorMessage = $this->Response->error->message;
 			} else {
 				$this->Response = simplexml_load_string($response);
 
