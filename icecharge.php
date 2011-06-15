@@ -42,8 +42,8 @@
 	 */
 
 	class ResponseFormat {
-		const Json = 0;
-		const Xml = 1;
+		const JSON = 0;
+		const XML = 1;
 	}
 
 	/*
@@ -116,9 +116,9 @@
 			$this->HttpStatus = $status;
 
 			if ($json)
-				$this->Format = ResponseFormat::Json;
+				$this->Format = ResponseFormat::JSON;
 			else
-				$this->Format = ResponseFormat::Xml;
+				$this->Format = ResponseFormat::XML;
 
 			$this->IsError = ($this->HttpStatus != HttpStatus::OK);
 
@@ -159,7 +159,7 @@
 		public $Verdict;
 
 		public function __construct($response) {
-			if ($response->Format == ResponseFormat::Json) {
+			if ($response->Format == ResponseFormat::JSON) {
 				$this->PaymentStatus = $response->Response->transaction->payment_status;
 				$this->Verdict = $response->Response->transaction->verdict;
 			} else {
@@ -180,7 +180,7 @@
 		public $Status;
 
 		public function __construct($response) {
-			if ($response->Format == ResponseFormat::Json) {
+			if ($response->Format == ResponseFormat::JSON) {
 				$this->Token = $response->Response->oob->token;
 				$this->Status = $response->Response->oob->status;
 			} else {
@@ -385,8 +385,8 @@
 
 			$url = "$this->EndPoint/$this->APIVersion/$format/$path";
 
-			$headers = array("User-Agent: " . $libVersion,
-					"Content-Type: application/" . $type);
+			$headers = array("User-Agent: $libVersion",
+					"Content-Type: application/$format");
 
 			curl_setopt($curl, CURLOPT_URL, $url);
 			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
@@ -399,7 +399,7 @@
 			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
 			curl_setopt($curl, CURLOPT_NOPROGRESS, true);
 
-			switch (strtoupper($method)) {
+			switch ($method) {
 				case HttpMethod::GET:
 					curl_setopt($curl, CURLOPT_HTTPGET, true);
 					break;
