@@ -93,6 +93,15 @@
 	}
 
 	/*
+	 * A class to imitate an enum for an OOB verify status result.
+	 */
+
+	class OOBVerifyStatus {
+		const SUCCESS = 0;
+		const FAILURE = 1;
+	}
+
+	/*
 	 * IceChargeResponse holds all the REST response data.
 	 * Before using the response, check IsError to see if an exception
 	 * occurred with the data sent to IceCharge.
@@ -187,6 +196,11 @@
 				$this->Token = $response->Response->oob['token'];
 				$this->Status = $response->Response->oob['status'];
 			}
+
+			if ($this->Status == "success")
+				$this->Status = OOBVerifyStatus::SUCCESS;
+			elseif ($this->Status == "failure")
+				$this->Status = OOBVerifyStatus::FAILURE;
 		}
 	}
 
