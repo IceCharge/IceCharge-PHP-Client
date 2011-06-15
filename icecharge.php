@@ -137,7 +137,7 @@
 					throw (new IceChargeException("syntax error in IceCharge's XML response"));
 
 				if ($this->IsError)
-					$this->ErrorMessage = $this->Response->ErrorMessage;
+					$this->ErrorMessage = $this->Response->error['message'];
 			}
 		}
 
