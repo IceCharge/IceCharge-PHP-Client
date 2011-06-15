@@ -1,13 +1,12 @@
 <?php
 
 	// Library version
-	$version = "IceCharge Client v1.0";
+	$libVersion = "IceCharge Client v1.0";
 
 	// ensure Curl is installed
 	if (!extension_loaded("curl"))
 		throw(new Exception(
 					"Curl extension is required for IceCharge PHP client to work"));
-
 
 	/*
 	 * IceChargeException is useful to catch this exception separately
@@ -23,9 +22,9 @@
 	 *
 	 * Response: will contain the response {xml,json} object.
 	 * HttpStatus: is the response code of the request.
-	 * Format: will contain either 'json' or 'xml'.
+	 * Format: will be either one of two values in ResponseFormat.
 	 * IsError: is true when HttpStatus != 200.
-	 * ErrorMessage: equals Response when there is an error.
+	 * ErrorMessage: error message returned if available.
 	 */
 
 	class IceChargeResponse {
@@ -40,11 +39,11 @@
 			$this->HttpStatus = $status;
 
 			if ($json)
-				$this->Format = "json";
+				$this->Format = ResponseFormat::Json;
 			else
-				$this->Format = "xml";
+				$this->Format = ResponseFormat::Xml;
 
-			$this->IsError = ($this->HttpStatus != 200);
+			$this->IsError = ($this->HttpStatus != HttpStatus::OK);
 
 			if ($json) {
 				$this->Response = json_decode($response);
@@ -64,15 +63,23 @@
 					$this->ErrorMessage = $this->Response->ErrorMessage;
 			}
 		}
+
+		public function throw_if_error($action) {
+			if ($this->IsError)
+				throw (new IceChargeException("failed to $action: $this->ErrorMessage"));
+		}
 	}
 
 	/*
 	 * Transaction holds all the REST response data for a transaction.
 	 *
-	 * Status: contains the transaction status.
+	 * PaymentStatus: contains the transaction payment status.
+	 * Verdict: contains the transaction verdict.
 	 */
 
 	class Transaction {
+		public $PaymentStatus;
+		public $Verdict;
 
 		public $Status;
 
@@ -82,6 +89,11 @@
 			} else {
 				$this->Status = $response->Response->Status;
 			}
+		}
+
+		public function throw_if_error($action) {
+			if ($this->IsError)
+				throw (new IceChargeException("failed to $action: $this->ErrorMessage"));
 		}
 	}
 
@@ -101,10 +113,11 @@
 
 		/*
 		 * __construct
-		 *	$username: Your AccountID
-		 *	$password: Your API key
-		 *	$version: IceCharge's API version
-		 *	$endpoint: The IceCharge REST Service URL, currently defaults to
+		 *
+		 * username: Your AccountID
+		 * password: Your API key
+		 * version: IceCharge's API version
+		 * endpoint: The IceCharge REST Service URL, currently defaults to
 		 * https://api.icecharge.com
 		 */
 		public function __construct($username, $password, $version,
@@ -118,15 +131,16 @@
 
 		/*
 		 * request
-		 *	$path: the URI for the request
-		 *	$method: the HTTP method to use, defaults to GET
-		 *	$data: for POST, data to send in the form of JSON or XML
-		 *	$json: a boolean flag to indicate that data is in JSON format,
+		 *
+		 * path: the URI for the request
+		 * method: the HTTP method to use, defaults to GET
+		 * data: for POST, data to send in the form of JSON or XML
+		 * json: a boolean flag to indicate that data is in JSON format,
 		 *		defaults to true
 		 *
-		 *	return: IceChargeResponse
+		 * return: IceChargeResponse
 		 */
-		public function request($path, $method = "GET", $data, $json = true) {
+		public function request($path, $method = HttpMethod::GET, $data, $json = true) {
 			$curl = curl_init();
 
 			if (!$curl)
@@ -134,17 +148,16 @@
 
 			$userpwd = $this->AccountID . ':' . $this->APIKey;
 
-			$type;
+			$format;
 
 			if ($json)
-				$type = "json";
+				$format = "json";
 			else
-				$type = "xml";
+				$format = "xml";
 
-			$url = $this->EndPoint . '/' . $this->APIVersion . '/' .
-				$type . '/' . $path;
+			$url = "$this->EndPoint/$this->APIVersion/$format/$path";
 
-			$headers = array("User-Agent: " . $version,
+			$headers = array("User-Agent: " . $libVersion,
 					"Content-Type: application/" . $type);
 
 			curl_setopt($curl, CURLOPT_URL, $url);
@@ -154,20 +167,22 @@
 			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 			curl_setopt($curl, CURLOPT_USERPWD, $userpwd);
 			curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+			curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
 			curl_setopt($curl, CURLOPT_NOPROGRESS, true);
 
 			switch (strtoupper($method)) {
-				case "GET":
+				case HttpMethod::GET:
 					curl_setopt($curl, CURLOPT_HTTPGET, true);
 					break;
 
-				case "POST":
+				case HttpMethod::POST:
 					curl_setopt($curl, CURLOPT_POST, true);
 					curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 					break;
 
 				default:
-					throw (new IceChargeException("unknown method $method"));
+					throw (new IceChargeException("unsupported method $method"));
 					break;
 			}
 
@@ -184,17 +199,16 @@
 
 		/*
 		 * getTransaction
-		 *	$txnid: transaction ID, provided by the merchant
+		 * txnID: Transaction ID, provided by the merchant.
 		 *
-		 *	return: Transaction
+		 * return: Transaction
 		 */
 		public function getTransaction($txnid, $json = true) {
 			$path = "transactions/" . $txnid;
 
-			$response = $this->request($path, "GET", "", $json);
+			$response = $this->request($path, $method, "", $json);
 
-			if ($response->IsError)
-				throw (new IceChargeException($response->ErrorMessage));
+			$response->throw_if_error("getTransaction");
 
 			return new Transaction($response);
 		}
