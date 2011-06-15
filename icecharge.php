@@ -158,19 +158,170 @@
 		public $PaymentStatus;
 		public $Verdict;
 
+		public function __construct($response) {
+			if ($response->Format == ResponseFormat::Json) {
+				$this->PaymentStatus = $response->Response->transaction->payment_status;
+				$this->Verdict = $response->Response->transaction->verdict;
+			} else {
+				$this->PaymentStatus = $response->Response->transaction['payment_status'];
+				$this->Verdict = $response->Response->transaction['verdict'];
+			}
+		}
+	}
+
+	/* OOB holds all possible REST responses for an OOB related action.
+	 *
+	 * Token: contains a generated token based on either a SID or a TID.
+	 * Status: contains whether sending SMS was successful or not.
+	 */
+
+	class OOB {
+		public $Token;
 		public $Status;
 
 		public function __construct($response) {
-			if ($response->Format == "json") {
-				$this->Status = $response->Response->status;
+			if ($response->Format == ResponseFormat::Json) {
+				$this->Token = $response->Response->oob->token;
+				$this->Status = $response->Response->oob->status;
 			} else {
-				$this->Status = $response->Response->Status;
+				$this->Token = $response->Response->oob['token'];
+				$this->Status = $response->Response->oob['status'];
 			}
 		}
+	}
 
-		public function throw_if_error($action) {
-			if ($this->IsError)
-				throw (new IceChargeException("failed to $action: $this->ErrorMessage"));
+	/*
+	 * Address is a structure to store an address detail without having to
+	 * deal with JSON or XML format directly. Another level of abstraction
+	 * if you will.
+	 *
+	 * name: Person's name exists at that address.
+	 * ctry: Country Part of the address. [ISO 3166-1]
+	 * city: City Part of the address.
+	 * state: State Part of the address.
+	 * st: Street Part of the address.
+	 * zip: ZIP codes can also hold postal codes and it is optional.
+	 */
+
+	class Address implements iFormat {
+		public $name;
+		public $ctry;
+		public $city;
+		public $state;
+		public $st;
+		public $zip;
+
+		public function toJSON() {
+			return json_encode($this);
+		}
+
+		public function toXML($element) {
+			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
+
+			$xml->addAttribute('name', $this->name);
+			$xml->addAttribute('ctry', $this->ctry);
+			$xml->addAttribute('city', $this->city);
+			$xml->addAttribute('state', $this->state);
+			$xml->addAttribute('st', $this->st);
+			$xml->addAttribute('zip', $this->zip);
+
+			return $xml;
+		}
+	}
+
+	/*
+	 * Card is a structure to store a card details without having to
+	 * deal with JSON or XML formats directly. Another level of abstration
+	 * if you will.
+	 *
+	 * ccn: Credit Card Number. (Sent Encrypted)
+	 * cvv: Card Verification Value. (Sent Encrypted)
+	 * tok: CCN Token in the form "1234XX...XX123" [READONLY]
+	 * ba: Billing Address Takes an Address object
+	 */
+
+	class Card implements iFormat {
+		public $ccn;
+		public $cvv;
+		public $tok;
+		public $ba;
+
+		private function _hash_val($val) {
+			return hash("sha512", hash("sha512", $val, true) . $val);
+		}
+
+		// Tokenizing CCN to 1234XXX...XXX123.
+		private function _tokenize() {
+			$len = strlen($this->ccn);
+			$arr = str_split($this->ccn);
+
+			for ($i = 3; $i++ < $len - 4;) {
+				$arr[$i] = 'X';
+			}
+
+			$this->tok = implode($arr);
+		}
+
+		public function toJSON() {
+			$this->_tokenize();
+			$this->ccn = $this->_hash_val($this->ccn);
+			$this->cvv = $this->_hash_val($this->cvv);
+			return json_encode($this);
+		}
+
+		public function toXML($element) {
+			$this->_tokenize();
+			$this->ccn = $this->_hash_val($this->ccn);
+			$this->cvv = $this->_hash_val($this->cvv);
+
+			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
+
+			$xml->addAttribute('ccn', $this->ccn);
+			$xml->addAttribute('cvv', $this->cvv);
+			$xml->addAttribute('tok', $this->tok);
+			$xml->addAttribute('ba', $this->ba->toXML("ba"));
+
+			return $xml;
+		}
+	}
+
+	/*
+	 * TransactionSubmission is a structure to pass on all the data required
+	 * to profile a transaction.
+	 *
+	 * id: Merchant generated ID for each transaction
+	 * sid: Merchant provided Session ID to correlate between a device submission and a transaction.
+	 * amt: Amount will be paid for this transaction
+	 * cur: Currency in which the amount will be paid in
+	 * card: Takes a Card object
+	 * sa: Shipping Address Takes an Address object
+	 */
+
+	class TransactionSubmission implements iFormat {
+		public $id;
+		public $sid;
+		public $amt;
+		public $cur;
+		public $card;
+		public $sa;
+
+		public function toJSON() {
+			$this->sid = utils::incEntropy($this->sid);
+			return json_encode($this);
+		}
+
+		public function toXML($element) {
+			$this->sid = utils::incEntropy($this->sid);
+			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
+
+			$xml->addAttribute('id', $this->id);
+			$xml->addAttribute('sid', $this->sid);
+			$xml->addAttribute('amt', $this->amt);
+			$xml->addAttribute('cur', $this->cur);
+			$xml->addChild($this->card->toXML("card"));
+			$xml->addChild($this->sa->toXML("sa"));
+
+			return $xml;
 		}
 	}
 
@@ -280,8 +431,9 @@
 		 *
 		 * return: Transaction
 		 */
-		public function getTransaction($txnid, $json = true) {
-			$path = "transactions/" . $txnid;
+		public function getTransaction($txnID, $json = true) {
+			$path = "transactions/$txnID";
+			$method = HttpMethod::GET;
 
 			$response = $this->request($path, $method, "", $json);
 
