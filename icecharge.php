@@ -16,6 +16,83 @@
 	class IceChargeException extends Exception {}
 
 	/*
+	 * Utils: Some utility functions.
+	 */
+
+	class utils {
+		public static function incEntropy($val) {
+			return hash("sha256", hash("sha256", $val, true) . $val);
+		}
+	}
+
+	/*
+	 * Interface for objects that are supposed to return JSON and XML objects.
+	 *
+	 * toJSON: Returns a JSON object.
+	 * toXML: Returns a XML object.
+	 */
+
+	interface iFormat {
+		public function toJSON();
+		public function toXML($element);
+	}
+
+	/*
+	 * A class to imitate an enum for response formats.
+	 */
+
+	class ResponseFormat {
+		const Json = 0;
+		const Xml = 1;
+	}
+
+	/*
+	 * A class to imitate an enum for HTTP methods.
+	 */
+
+	class HttpMethod {
+		const GET = 0;
+		const POST = 1;
+	}
+
+	/*
+	 * A class to imitate an enum for HTTP statuses.
+	 */
+
+	class HttpStatus {
+		const OK = 200;
+		const BAD_REQUEST = 400;
+		const UNAUTHORIZED = 401;
+		const NOT_FOUND = 404;
+		const HTTP_METHOD_NOT_ALLOWED = 405;
+		const INTERNAL_SERVER_ERROR = 500;
+		const HTTP_VERSION_NOT_SUPPORTED = 505;
+	}
+
+	/*
+	 * A class to imitate an enum for a transaction payment status.
+	 */
+
+	class PaymentStatus {
+		const PENDING = 'P';
+		const ACCEPTED = 'A';
+		const REJECTED = 'R';
+		const CHARGEBACK = 'C';
+	}
+
+	/*
+	 * A class to imitate an enum for a transaction verdict.
+	 */
+
+	class Verdict {
+		const PENDING = 'P';
+		const ACCEPTED = 'A';
+		const REJECTED = 'R';
+		const MANUAL = 'M';
+		const OOB = 'O';
+	}
+
+	/*
 	 * IceChargeResponse holds all the REST response data.
 	 * Before using the response, check IsError to see if an exception
 	 * occurred with the data sent to IceCharge.
