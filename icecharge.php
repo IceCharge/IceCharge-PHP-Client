@@ -372,6 +372,7 @@
 		public $shipping_address;
 
 		public function toJSON() {
+			$this->card->toJSON();
 			$this->sid = utils::incEntropy($this->sid);
 			return json_encode($this);
 		}
