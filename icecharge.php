@@ -271,10 +271,10 @@
 
 	class Address implements iFormat {
 		public $name;
-		public $ctry;
+		public $country;
 		public $city;
 		public $state;
-		public $st;
+		public $street;
 		public $zip;
 
 		public function toJSON() {
@@ -285,10 +285,10 @@
 			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
 
 			$xml->addAttribute('name', $this->name);
-			$xml->addAttribute('ctry', $this->ctry);
+			$xml->addAttribute('country', $this->country);
 			$xml->addAttribute('city', $this->city);
 			$xml->addAttribute('state', $this->state);
-			$xml->addAttribute('st', $this->st);
+			$xml->addAttribute('street', $this->street);
 			$xml->addAttribute('zip', $this->zip);
 
 			return $xml;
@@ -309,8 +309,8 @@
 	class Card implements iFormat {
 		public $ccn;
 		public $cvv;
-		public $tok;
-		public $ba;
+		public $token;
+		public $billing_address;
 
 		private function _hash_val($val) {
 			return hash("sha512", hash("sha512", $val, true) . $val);
@@ -325,7 +325,7 @@
 				$arr[$i] = 'X';
 			}
 
-			$this->tok = implode($arr);
+			$this->token = implode($arr);
 		}
 
 		public function toJSON() {
@@ -344,8 +344,8 @@
 
 			$xml->addAttribute('ccn', $this->ccn);
 			$xml->addAttribute('cvv', $this->cvv);
-			$xml->addAttribute('tok', $this->tok);
-			$xml->addAttribute('ba', $this->ba->toXML("ba"));
+			$xml->addAttribute('token', $this->token);
+			$xml->appendXML($this->billing_address->toXML('billing_address'));
 
 			return $xml;
 		}
@@ -366,10 +366,10 @@
 	class TransactionSubmission implements iFormat {
 		public $id;
 		public $sid;
-		public $amt;
-		public $cur;
+		public $amount;
+		public $currency;
 		public $card;
-		public $sa;
+		public $shipping_address;
 
 		public function toJSON() {
 			$this->sid = utils::incEntropy($this->sid);
@@ -382,10 +382,10 @@
 
 			$xml->addAttribute('id', $this->id);
 			$xml->addAttribute('sid', $this->sid);
-			$xml->addAttribute('amt', $this->amt);
-			$xml->addAttribute('cur', $this->cur);
-			$xml->addChild($this->card->toXML("card"));
-			$xml->addChild($this->sa->toXML("sa"));
+			$xml->addAttribute('amount', $this->amount);
+			$xml->addAttribute('currency', $this->currency);
+			$xml->appendXML($this->card->toXML('card'));
+			$xml->appendXML($this->shipping_address->toXML('shipping_address'));
 
 			return $xml;
 		}
