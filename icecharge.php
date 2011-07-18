@@ -389,7 +389,8 @@
 		 * endpoint: The IceCharge REST Service URL, currently defaults to
 		 * https://api.icecharge.com
 		 */
-		public function __construct($username, $password, $version,
+		public function __construct($username, $password,
+				$version = "v1",
 				$endpoint = "https://api.icecharge.com") {
 
 			$this->AccountID = $username;
