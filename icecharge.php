@@ -474,7 +474,7 @@
 		 * return: Transaction
 		 */
 		public function getTransaction($txnID, $json = true) {
-			$path = "transactions/$txnID";
+			$path = "transaction/$txnID";
 			$method = HttpMethod::GET;
 
 			$response = $this->request($path, $method, "", $json);
@@ -490,7 +490,7 @@
 		 */
 		public function submitTransaction($txnObj, $json = true) {
 			$data;
-			$path = "transactions";
+			$path = "transaction";
 			$method = HttpMethod::POST;
 
 			if ($json)
