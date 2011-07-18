@@ -282,7 +282,7 @@
 		}
 
 		public function toXML($element) {
-			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
+			$xml = new ExSimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
 
 			$xml->addAttribute('name', $this->name);
 			$xml->addAttribute('country', $this->country);
@@ -340,7 +340,7 @@
 			$this->ccn = $this->_hash_val($this->ccn);
 			$this->cvv = $this->_hash_val($this->cvv);
 
-			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
+			$xml = new ExSimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
 
 			$xml->addAttribute('ccn', $this->ccn);
 			$xml->addAttribute('cvv', $this->cvv);
@@ -378,7 +378,7 @@
 
 		public function toXML($element) {
 			$this->sid = utils::incEntropy($this->sid);
-			$xml = new SimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
+			$xml = new ExSimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
 
 			$xml->addAttribute('id', $this->id);
 			$xml->addAttribute('sid', $this->sid);
@@ -542,7 +542,7 @@
 				$arr = array('payment_status' => $status);
 				$data = json_encode($arr);
 			} else {
-				$root = new SimpleXMLElement('<transaction/>');
+				$root = new ExSimpleXMLElement('<transaction/>');
 				$root->addAttribute('payment_status', $status);
 				$data = $root->asXML();
 			}
@@ -567,7 +567,7 @@
 				$arr = array('sid' => utils::incEntropy($sessionID));
 				$data = json_encode($arr);
 			} else {
-				$root = new SimpleXMLElement('<oob_request/>');
+				$root = new ExSimpleXMLElement('<oob_request/>');
 				$root->addAttribute('sid', utils::incEntropy($sessionID));
 				$data = $root->asXML();
 			}
@@ -610,7 +610,7 @@
 				$arr = array('token' => $oobToken, 'to' => $to);
 				$data = json_encode($arr);
 			} else {
-				$root = new SimpleXMLElement('<oob/>');
+				$root = new ExSimpleXMLElement('<oob/>');
 				$root->addAttribute('token', $oobToken);
 				$root->addAttribute('to', $to);
 				$data = $root->asXML();
@@ -637,7 +637,7 @@
 				$arr = array('token' => $oobToken, 'secret' => $secret);
 				$data = json_encode($arr);
 			} else {
-				$root = new SimpleXMLElement('<oob_result/>');
+				$root = new ExSimpleXMLElement('<oob_result/>');
 				$root->addAttribute('token', $oobToken);
 				$root->addAttribute('secret', $secret);
 				$data = $root->asXML();
