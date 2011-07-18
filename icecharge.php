@@ -64,6 +64,31 @@
 		public function toXML($element);
 	}
 
+
+	/*
+	 * A class to extend SimpleXMLElement with a an append function.
+	 */
+
+	class ExSimpleXMLElement extends SimpleXMLElement {
+		public function appendXML($append) {
+			if ($append) {
+				if (strlen(trim((string) $append)) == 0) {
+					$xml = $this->addChild($append->getName());
+
+					foreach ($append->children() as $child) {
+						$xml->appendXML($child);
+					}
+				} else {
+					$xml = $this->addChild($append->getName(), (string) $append);
+				}
+
+				foreach ($append->attributes() as $n => $v) {
+					$xml->addAttribute($n, $v);
+				}
+			}
+		}
+	}
+
 	/*
 	 * A class to imitate an enum for response formats.
 	 */
