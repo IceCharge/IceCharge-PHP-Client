@@ -27,9 +27,6 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-	// Library version
-	$libVersion = "IceCharge Client v1.0";
-
 	// ensure Curl is installed
 	if (!extension_loaded("curl"))
 		throw(new Exception(
@@ -47,6 +44,9 @@
 	 */
 
 	class utils {
+		// Library version
+		const libVersion = "IceCharge PHP Client v1.0";
+
 		public static function incEntropy($val) {
 			return hash("sha256", hash("sha256", $val, true) . $val);
 		}
@@ -453,7 +453,7 @@
 
 			$url = "$this->EndPoint/$this->APIVersion/$format/$path";
 
-			$headers = array("User-Agent: $libVersion",
+			$headers = array("User-Agent: ".utils::libVersion,
 					"Content-Type: application/$format");
 
 			curl_setopt($curl, CURLOPT_URL, $url);
