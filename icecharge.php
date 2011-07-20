@@ -40,17 +40,10 @@
 	class IceChargeException extends Exception {}
 
 	/*
-	 * Utils: Some utility functions.
+	 * Global variables.
 	 */
 
-	class utils {
-		// Library version
-		const libVersion = "IceCharge PHP Client v1.0";
-
-		public static function incEntropy($val) {
-			return hash("sha256", hash("sha256", $val, true) . $val);
-		}
-	}
+	const libVersion = "IceCharge PHP Client v1.0";
 
 	/*
 	 * Interface for objects that are supposed to return JSON and XML objects.
@@ -373,12 +366,10 @@
 
 		public function toJSON() {
 			$this->card->toJSON();
-			$this->sid = utils::incEntropy($this->sid);
 			return json_encode($this);
 		}
 
 		public function toXML($element) {
-			$this->sid = utils::incEntropy($this->sid);
 			$xml = new ExSimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
 
 			$xml->addAttribute('id', $this->id);
@@ -437,6 +428,8 @@
 		 * return: IceChargeResponse
 		 */
 		public function request($path, $method = HttpMethod::GET, $data, $json = true) {
+			global $libVersion;
+
 			$curl = curl_init();
 
 			if (!$curl)
@@ -453,7 +446,7 @@
 
 			$url = "$this->EndPoint/$this->APIVersion/$format/$path";
 
-			$headers = array("User-Agent: ".utils::libVersion,
+			$headers = array("User-Agent: " . $libVersion,
 					"Content-Type: application/$format");
 
 			curl_setopt($curl, CURLOPT_URL, $url);
@@ -565,11 +558,11 @@
 			$method = HttpMethod::POST;
 
 			if ($json) {
-				$arr = array('sid' => utils::incEntropy($sessionID));
+				$arr = array('sid' => $sessionID);
 				$data = json_encode($arr);
 			} else {
 				$root = new ExSimpleXMLElement('<oob_request/>');
-				$root->addAttribute('sid', utils::incEntropy($sessionID));
+				$root->addAttribute('sid', $sessionID);
 				$data = $root->asXML();
 			}
 
