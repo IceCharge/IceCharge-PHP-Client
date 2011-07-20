@@ -517,7 +517,7 @@
 			else
 				$data = $txnObj->toXML("transaction")->asXML();
 
-			$respone = $this->request($path, $method, $data, $json);
+			$response = $this->request($path, $method, $data, $json);
 
 			$response->throw_if_error("submitTransaction");
 		}
