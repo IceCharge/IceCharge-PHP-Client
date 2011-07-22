@@ -520,6 +520,8 @@
 			$response = $this->request($path, $method, $data, $json);
 
 			$response->throw_if_error("submitTransaction");
+
+			return $response;
 		}
 
 		/*
@@ -544,6 +546,8 @@
 			$response = $this->request($path, $method, $data, $json);
 
 			$response->throw_if_error("submitPaymentStatus");
+
+			return $response;
 		}
 
 		/*
@@ -613,6 +617,8 @@
 			$response = $this->request($path, $method, $data, $json);
 
 			$response->throw_if_error("sendSMS");
+
+			return $response;
 		}
 
 		/*
