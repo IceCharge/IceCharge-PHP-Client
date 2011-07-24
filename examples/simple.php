@@ -25,17 +25,20 @@
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 	require_once('../icecharge.php');
 
 	$mid = 'YOUR_MID';
 	$api_key = 'YOUR_API_KEY';
+	$api_version = 'API_VERSION'; // e.g. 'v1'
+	$endpoint = 'https://api.icecharge.com';
 
 	$sid = isset($_COOKIE['manny']) ? $_COOKIE['manny'] : "".time();
 	setcookie('manny', $sid);
 
 	if (isset($_POST['ccn'])) {
 		$txn = new TransactionSubmission();
-		$txn->id = "" . time();
+		$txn->id = "" . time(); // In production, this needs to be supplied by the merchant.
 		$txn->sid = $_COOKIE['manny'];
 		$txn->amount = 42000;
 		$txn->currency = "USD";
@@ -54,10 +57,12 @@
 		$txn->card->billing_address = $ba;
 
 		try {
-			$client = new IceChargeClient($mid, $api_key);
-			die($client->submitTransaction($txn));
-		} catch(Exception $e) {
-			die("Error: <pre>$e</pre>");
+			$client = new IceChargeClient($mid, $api_key, $api_version, $endpoint);
+			$client->submitTransaction($txn);
+		} catch(IceChargeException $ex) {
+			echo 'Error: <pre>' . $ex->getMessage() . '</pre>';
+		} catch(Exception $ex) {
+			die('Error: <pre>' . $ex->getMessage() . '</pre>');
 		}
 	}
 ?>
@@ -73,6 +78,7 @@
 	}
 	</style>
 
+	<!-- SCRIPT BLOCK FROM SIGNUP -->
 	<script type="text/javascript">
 		var IC_config = {
 			mid: '<?=$mid?>',
@@ -85,6 +91,8 @@
 			s.parentNode.insertBefore(ic,s)
 		})(document,'script');
 	</script>
+	<!-- SCRIPT BLOCK FROM SIGNUP -->
+
 </head>
 <body>
 	<form action="" method="POST">
