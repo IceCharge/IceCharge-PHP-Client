@@ -501,7 +501,7 @@
 
 			$result = curl_exec($curl);
 
-			if ($result == false)
+			if (curl_error($curl))
 				throw (new IceChargeException("curl failed with error " .
 							curl_error($curl)));
 
