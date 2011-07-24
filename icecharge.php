@@ -178,6 +178,28 @@
 
 			$this->IsError = ($this->HttpStatus != HttpStatus::OK);
 
+			if ($this->IsError) {
+				switch ($this->HttpStatus) {
+					case HttpStatus::UNAUTHORIZED:
+						$this->ErrorMessage = 'authorization denied';
+						break;
+
+					case HttpStatus::PAYMENT_REQUIRED:
+						$this->ErrorMessage = 'payment is required';
+						break;
+
+					case HttpStatus::FORBIDDEN:
+						$this->ErrorMessage = 'this account has been disabled';
+						break;
+
+					case HttpStatus::NOT_FOUND:
+						$this->ErrorMessage = 'resource was not found';
+						break;
+				}
+			}
+
+			if (!$response) return;
+
 			if ($json) {
 				$this->Response = json_decode($response);
 
@@ -199,7 +221,7 @@
 
 		public function throw_if_error($action) {
 			if ($this->IsError)
-				throw (new IceChargeException("failed to $action: $this->ErrorMessage"));
+				throw new IceChargeException("failed to $action: $this->ErrorMessage");
 		}
 	}
 
