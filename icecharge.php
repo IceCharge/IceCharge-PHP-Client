@@ -575,6 +575,33 @@
 		}
 
 		/*
+		 * screenTransaction
+		 * txnID: Transaction ID, provided by the merchant.
+		 * SID: Session ID, provided by the merchant.
+		 */
+		public function screenTransaction($txnID, $SID, $json = true) {
+			$data;
+			$path = "transaction/screen";
+			$method = HttpMethod::POST;
+
+			if ($json) {
+				$arr = array('id' => $txnID, 'sid' => $SID);
+				$data = json_encode($arr);
+			} else {
+				$root = new ExSimpleXMLElement('<transaction/>');
+				$root->addAttribute('id', $txnID);
+				$root->addAttribute('sid', $SID);
+				$data = $root->asXML();
+			}
+
+			$response = $this->request($path, $method, $data, $json);
+
+			$response->throw_if_error("screenTransaction");
+
+			return $response;
+		}
+
+		/*
 		 * getToken_Session: a varient to get an OOB token based on a SID.
 		 * sessionID: Session ID, provided by the merchant.
 		 *
