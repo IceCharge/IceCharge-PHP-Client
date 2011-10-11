@@ -522,7 +522,7 @@
 
             $response = $this->request($path, $method, "", $json);
 
-            $response->throw_if_error("getTransaction");
+            $response->throw_if_error(__FUNCTION__);
 
             return new Transaction($response);
         }
@@ -543,7 +543,7 @@
 
             $response = $this->request($path, $method, $data, $json);
 
-            $response->throw_if_error("submitTransaction");
+            $response->throw_if_error(__FUNCTION__);
 
             return $response;
         }
@@ -569,7 +569,7 @@
 
             $response = $this->request($path, $method, $data, $json);
 
-            $response->throw_if_error("submitPaymentStatus");
+            $response->throw_if_error(__FUNCTION__);
 
             return $response;
         }
@@ -596,7 +596,7 @@
 
             $response = $this->request($path, $method, $data, $json);
 
-            $response->throw_if_error("screenTransaction");
+            $response->throw_if_error(__FUNCTION__);
 
             return $response;
         }
@@ -623,7 +623,7 @@
 
             $response = $this->request($path, $method, $data, $json);
 
-            $response->throw_if_error("getOOBToken");
+            $response->throw_if_error(__FUNCTION__);
 
             return new OOB($response);
         }
@@ -640,7 +640,7 @@
 
             $response = $this->request($path, $method, "", $json);
 
-            $response->throw_if_error("getOOBToken_Transaction");
+            $response->throw_if_error(__FUNCTION__);
 
             return new OOB($response);
         }
@@ -667,7 +667,7 @@
 
             $response = $this->request($path, $method, $data, $json);
 
-            $response->throw_if_error("sendSMS");
+            $response->throw_if_error(__FUNCTION__);
 
             return $response;
         }
@@ -696,7 +696,7 @@
 
             $response = $this->request($path, $method, $data, $json);
 
-            $response->throw_if_error("verifyOOB");
+            $response->throw_if_error(__FUNCTION__);
 
             return new OOB($response);
         }
