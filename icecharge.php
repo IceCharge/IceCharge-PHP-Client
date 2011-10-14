@@ -324,6 +324,7 @@
      */
 
     class Card implements iFormat {
+        public $name;
         public $ccn;
         public $cvv;
         public $token;
@@ -359,6 +360,7 @@
 
             $xml = new ExSimpleXMLElement('<' . $element . '>' . '</' . $element . '>');
 
+            $xml->addAttribute('name', $this->name);
             $xml->addAttribute('ccn', $this->ccn);
             $xml->addAttribute('cvv', $this->cvv);
             $xml->addAttribute('token', $this->token);
